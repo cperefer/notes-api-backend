@@ -71,6 +71,7 @@ app.post('/api/notes', (request,response) => {
   response.json(newNote);
 });
 
+//just a change to test
 app.delete('/api/notes/:id', (request,response) => {
   const id = Number(request.params.id);
 
