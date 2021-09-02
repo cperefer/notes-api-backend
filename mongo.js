@@ -9,6 +9,8 @@ mongoose.connect(CONNECTION_STRING)
     console.error(err);
   });
 
+process.on('uncaughtException', () => mongoose.connection.disconnect());
+
 // Note.find({})
 //   .then((result) => {
 //     console.log(result);

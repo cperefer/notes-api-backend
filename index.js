@@ -25,7 +25,7 @@ app.get('/api/notes', (request,response) => {
     .then((notes) => response.json(notes));
 });
 
-app.get('/api/notes/:id', (request,response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   const {id} = request.params;
 
   Note.findById(id).then((note) => {
@@ -34,10 +34,7 @@ app.get('/api/notes/:id', (request,response) => {
     } else {
       response.status(404).end();
     }
-  }).catch((err) => {
-    console.error(err);
-    response.status(400).end();
-  });
+  }).catch((err) => next(err));
 });
 
 app.post('/api/notes', (request,response) => {
