@@ -1,4 +1,5 @@
-module.exports = (error, request, response) => {
+// eslint-disable-next-line
+module.exports = (error, request, response, next) => {
   console.error(error);
   console.log(error.name);
 
