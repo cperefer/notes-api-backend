@@ -3,7 +3,7 @@ const {server} = require('../index');
 const Note = require('../models/Note');
 const {api, INITIAL_NOTES, getAllContentsFromNotes} = require('./helpers');
 
-describe.skip('Notes tests', () => {
+describe('Notes tests', () => {
   beforeEach(async() => {
     await Note.deleteMany({});
 

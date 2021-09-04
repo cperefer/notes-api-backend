@@ -5,14 +5,17 @@ const Tracing = require('@sentry/tracing');
 const express = require('express');
 const logger = require ('./loggerMiddleware');
 const cors = require('cors');
-const Note = require('./models/Note');
 
+//middlewares
 const notFound = require('./middleware/notFound');
 const handleErrors = require('./middleware/handleErrors');
 
+//Controllers
+const notesRouter = require('./controllers/notes');
 const usersRouter = require('./controllers/users');
+
 const app = express();
-//middlewares
+
 Sentry.init({
   dsn: 'https://ed8399d75334473caf17c15b65bb8e3d@o986851.ingest.sentry.io/5943609',
   integrations: [
@@ -36,72 +39,7 @@ app.get('/', (request, response) => {
   response.send('<h1>Hello!!</h1>');
 });
 
-app.get('/api/notes', async (request, response) => {
-  const notes = await Note.find({});
-  response.json(notes);
-});
-
-app.get('/api/notes/:id', (request, response, next) => {
-  const {id} = request.params;
-
-  Note.findById(id).then((note) => {
-    if (note) {
-      response.json(note);
-    } else {
-      response.status(404).end();
-    }
-  }).catch((err) => next(err));
-});
-
-app.post('/api/notes', async (request, response, next) => {
-  const note = request.body;
-
-  if (!note.content) {
-    return response.status(400).json({
-      error: 'required "content" field is missing',
-    });
-  }
-
-  const newNote = new Note({
-    date: new Date().toISOString(),
-    content: note.content,
-    important: note.important || false,
-  });
-
-  try {
-    const savedNote = await newNote.save();
-    response.json(savedNote);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.put('/api/notes/:id', (request, response, next) => {
-  const {id} = request.params,
-    note = request.body;
-
-  const newNoteInfo = {
-    content: note.content,
-    important: note.important,
-  };
-
-  Note.findByIdAndUpdate(id, newNoteInfo, {new: true})
-    .then((result) => {
-      response.json(result);
-    }).catch((err) => {
-      next(err);
-    });
-});
-
-app.delete('/api/notes/:id', (request, response, next) => {
-  const {id} = request.params;
-
-  Note.findByIdAndRemove(id).then(() => {
-    response.status(204).end();
-  }).catch((err) => next(err));
-
-});
-
+app.use('/api/notes', notesRouter);
 app.use('/api/users', usersRouter);
 app.use(notFound);
 app.use(Sentry.Handlers.errorHandler());
