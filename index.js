@@ -10,6 +10,7 @@ const Note = require('./models/Note');
 const notFound = require('./middleware/notFound');
 const handleErrors = require('./middleware/handleErrors');
 
+const usersRouter = require('./controllers/users');
 const app = express();
 //middlewares
 Sentry.init({
@@ -101,11 +102,12 @@ app.delete('/api/notes/:id', (request, response, next) => {
 
 });
 
+app.use('/api/users', usersRouter);
 app.use(notFound);
 app.use(Sentry.Handlers.errorHandler());
 app.use(handleErrors);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 module.exports = {app, server};

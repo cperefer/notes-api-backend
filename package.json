@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "dev": "cross-env NODE_ENV=development PORT=3001 nodemon index.js",
     "lint": "eslint .",
-    "start": "cross-env NODE_ENV=production node index.js",
-    "test": "cross-env NODE_ENV=test jest --verbose --silent",
+    "start": "cross-env NODE_ENV=production PORT=3000 node index.js",
+    "test": "cross-env NODE_ENV=test jest --verbose --silent --forceExit",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],
@@ -20,11 +20,14 @@
     "supertest": "^6.1.6"
   },
   "dependencies": {
+    "@sentry/node": "^6.12.0",
+    "bcrypt": "^5.0.1",
     "cors": "2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "mongoose": "^6.0.3"
+    "mongoose": "^6.0.4",
+    "mongoose-unique-validator": "^2.0.3"
   },
   "jest": {
     "testEnvironment": "node"
