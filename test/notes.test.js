@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 const {server} = require('../index');
 const Note = require('../models/Note');
-const {api, INITIAL_NOTES, getAllContentsFromNotes} = require('./helpers');
+const {api, INITIAL_NOTES, getAllContentsFromNotes, doLogin} = require('./helpers');
+let jwtToken;
 
 describe('Notes tests', () => {
+  beforeAll(async () => {
+    const ret = await doLogin();
+    jwtToken = ret.body.token;
+  });
+
   beforeEach(async() => {
     await Note.deleteMany({});
 
@@ -48,6 +54,7 @@ describe('Notes tests', () => {
 
       await api
         .post('/api/notes')
+        .set('Authorization', `Bearer ${jwtToken}`)
         .send(newNote)
         .expect(200)
         .expect('Content-Type', /application\/json/);
@@ -63,11 +70,70 @@ describe('Notes tests', () => {
 
       await api
         .post('/api/notes')
+        .set('Authorization', `Bearer ${jwtToken}`)
         .send(newNote)
         .expect(400);
 
       const response = await api.get('/api/notes');
       expect(response.body).toHaveLength(INITIAL_NOTES.length);
+    });
+  });
+
+  describe('PUT /api/notes', () => {
+    it.only('Should modify an existent note', async() => {
+      const newNote = {
+        content: 'Nota modificada',
+        important: true,
+      };
+
+      const {response} = await getAllContentsFromNotes(),
+        {id} = response.body[0];
+
+      await api
+        .put(`/api/notes/${id}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send(newNote)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+      const {contents} = await getAllContentsFromNotes();
+      expect(contents).toContain(newNote.content);
+    });
+
+    it.only('Should get 401 if not logged in', async() => {
+      const newNote = {
+        content: 'Nota modificada',
+        important: true,
+      };
+
+      const {response} = await getAllContentsFromNotes(),
+        {id} = response.body[0];
+
+      await api
+        .put(`/api/notes/${id}`)
+        .send(newNote)
+        .expect(401)
+        .expect('Content-Type', /application\/json/);
+
+      const {contents} = await getAllContentsFromNotes();
+      expect(contents).not.toContain(newNote.content);
+    });
+
+    it.only('Should get 400 if note doesn\'t exists', async() => {
+      const newNote = {
+        content: 'Nota modificada',
+        important: true,
+      };
+
+      await api
+        .put('/api/notes/aaabb33}')
+        .set('Authorization', `Bearer ${jwtToken}`)
+        .send(newNote)
+        .expect(400)
+        .expect('Content-Type', /application\/json/);
+
+      const {contents} = await getAllContentsFromNotes();
+      expect(contents).not.toContain(newNote.content);
     });
   });
 
@@ -79,6 +145,7 @@ describe('Notes tests', () => {
 
       await api
         .delete(`/api/notes/${noteToDelete.id}`)
+        .set('Authorization', `Bearer ${jwtToken}`)
         .expect(204);
 
       const {contents, response: secondResponse} = await getAllContentsFromNotes();
@@ -89,7 +156,17 @@ describe('Notes tests', () => {
     it('Should return error 400 if ID does not exist', async() => {
       await api
         .delete('/api/notes/123')
+        .set('Authorization', `Bearer ${jwtToken}`)
         .expect(400);
+
+      const {response} = await getAllContentsFromNotes();
+      expect(response.body).toHaveLength(INITIAL_NOTES.length);
+    });
+
+    it('Should return error 401 if user is not logged in', async() => {
+      await api
+        .delete('/api/notes/123')
+        .expect(401);
 
       const {response} = await getAllContentsFromNotes();
       expect(response.body).toHaveLength(INITIAL_NOTES.length);

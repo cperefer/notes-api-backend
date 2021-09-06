@@ -29,9 +29,19 @@ const getUsers = (async() => {
   return usersDB.map((user) => user.toJSON());
 });
 
+const doLogin = (async() => {
+  const usersDB = await User.find({}),
+    user = usersDB[0];
+
+  return await api
+    .post('/api/login')
+    .send({username: user.username, password: 'pwd'});
+});
+
 module.exports = {
   api,
   INITIAL_NOTES,
   getAllContentsFromNotes,
   getUsers,
+  doLogin,
 };

@@ -1,9 +1,13 @@
 const notesRouter = require('express').Router();
+const userExtractor = require('../middleware/userExtractor');
 const Note = require('../models/Note');
+const User = require('../models/User');
 
 notesRouter.get('/', async (request, response) => {
-  console.log('van a pensar que eres tonto');
-  const notes = await Note.find({});
+  const notes = await Note.find({}).populate('user', {
+    username: 1,
+    name: 1,
+  });
   response.json(notes);
 });
 
@@ -19,30 +23,36 @@ notesRouter.get('/:id', (request, response, next) => {
   }).catch((err) => next(err));
 });
 
-notesRouter.post('/', async (request, response, next) => {
-  const note = request.body;
+notesRouter.post('/', userExtractor, async (request, response, next) => {
+  const {
+    content,
+    important = false,
+  } = request.body;
 
-  if (!note.content) {
+  if (!content) {
     return response.status(400).json({
       error: 'required "content" field is missing',
     });
   }
-
+  const user = await User.findById(request.userId);
   const newNote = new Note({
     date: new Date().toISOString(),
-    content: note.content,
-    important: note.important || false,
+    content,
+    important,
+    user: user._id,
   });
 
   try {
     const savedNote = await newNote.save();
+    user.notes = user.notes.concat(savedNote._id);
+    await user.save();
     response.json(savedNote);
   } catch (err) {
     next(err);
   }
 });
 
-notesRouter.put('/:id', (request, response, next) => {
+notesRouter.put('/:id', userExtractor, (request, response, next) => {
   const {id} = request.params,
     note = request.body;
 
@@ -59,7 +69,7 @@ notesRouter.put('/:id', (request, response, next) => {
     });
 });
 
-notesRouter.delete('/:id', (request, response, next) => {
+notesRouter.delete('/:id', userExtractor, (request, response, next) => {
   const {id} = request.params;
 
   Note.findByIdAndRemove(id).then(() => {

@@ -5,7 +5,7 @@ const {server} = require('../index');
 const {api, getUsers} = require('./helpers');
 
 // jest.setTimeout(60000);
-describe('Users test', () => {
+describe.skip('Users test', () => {
   beforeEach(async () =>{
     await User.deleteMany({});
 

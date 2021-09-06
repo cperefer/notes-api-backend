@@ -13,6 +13,7 @@ const handleErrors = require('./middleware/handleErrors');
 //Controllers
 const notesRouter = require('./controllers/notes');
 const usersRouter = require('./controllers/users');
+const loginRouter = require('./controllers/login');
 
 const app = express();
 
@@ -41,6 +42,8 @@ app.get('/', (request, response) => {
 
 app.use('/api/notes', notesRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/login', loginRouter);
+
 app.use(notFound);
 app.use(Sentry.Handlers.errorHandler());
 app.use(handleErrors);

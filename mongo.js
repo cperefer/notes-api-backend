@@ -14,22 +14,3 @@ mongoose.connect(CONNECTION_STRING)
   });
 
 process.on('uncaughtException', () => mongoose.disconnect());
-
-// Note.find({})
-//   .then((result) => {
-//     console.log(result);
-//     mongoose.connection.close();
-//   });
-// const note = new Note({
-//   content: 'Fua, la virgen',
-//   date: new Date(),
-//   important: true,
-// });
-
-// note.save()
-//   .then((result) => {
-//     console.log(result);
-//     mongoose.connection.close();
-//   }).catch((err) => {
-//     console.error(err);
-//   });
